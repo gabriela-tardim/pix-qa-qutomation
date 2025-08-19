@@ -24,7 +24,7 @@ public class PixRunner {
 
         long t0 = System.nanoTime();
 
-        Runner.Builder rb = Runner.path("classpath:features");
+        var rb = Runner.path("classpath:features");
         if (tags.length > 0) rb.tags(tags);
 
         Results results = rb.parallel(1);
@@ -88,7 +88,6 @@ public class PixRunner {
     }
 
     private static String resolveWebhook() {
-        // prioridade: system property, depois env var – aceita 2 nomes
         for (String key : new String[]{"SLACK_WEBHOOK_URL", "SLACK_WEBHOOK"}) {
             String v = System.getProperty(key);
             if (v != null && !v.isBlank()) return v;
