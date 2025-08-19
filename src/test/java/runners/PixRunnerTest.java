@@ -13,7 +13,7 @@ import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
-public class PixRunner {
+public class PixRunnerTest {
 
     @Test
     void runSuiteAndNotify() throws Exception {
