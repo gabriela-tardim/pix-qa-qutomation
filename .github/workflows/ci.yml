@@ -2,7 +2,7 @@
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, feat/** ]
   pull_request:
   workflow_dispatch:
     inputs:
@@ -26,27 +26,12 @@ jobs:
           java-version: "11"
           cache: maven
 
-      - name: Slack smoke ping
-        if: always()
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        shell: bash
-        run: |
-          if [ -z "${SLACK_WEBHOOK_URL:-}" ]; then
-            echo "SLACK_WEBHOOK_URL is NOT set"; exit 1;
-          fi
-          curl -s -o /dev/null -w "%{http_code}\n" -X POST \
-            -H 'Content-type: application/json' \
-            --data '{"text":"CI smoke: webhook ok (run #'"${{ github.run_number }}"')"}' \
-            "$SLACK_WEBHOOK_URL"
-
       - name: Build & Test (Maven + Karate)
         shell: bash
         env:
           KARATE_TAGS: ${{ github.event.inputs.tags }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_CHANNEL: qa-automation-alerts-pix
-          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}  # opcional, útil pro card
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
           if [ -n "$KARATE_TAGS" ]; then
             echo ">> Running with tags: $KARATE_TAGS"
