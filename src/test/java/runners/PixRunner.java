@@ -3,7 +3,6 @@ package runners;
 import com.intuit.karate.Results;
 import com.intuit.karate.Runner;
 import com.intuit.karate.JsonUtils;
-
 import org.junit.jupiter.api.Test;
 
 import java.net.http.*;
@@ -18,7 +17,9 @@ public class PixRunner {
     @Test
     void runSuiteAndNotify() throws Exception {
 
-        String tagsProp = System.getProperty("TAGS", "").trim();
+        // --- TAGS:
+        String envTags = System.getenv("KARATE_TAGS");
+        String tagsProp = System.getProperty("TAGS", envTags == null ? "" : envTags).trim();
         String[] tags = tagsProp.isEmpty() ? new String[]{} : tagsProp.split("\\s*,\\s*");
 
         long t0 = System.nanoTime();
@@ -26,7 +27,7 @@ public class PixRunner {
         Runner.Builder rb = Runner.path("classpath:features");
         if (tags.length > 0) rb.tags(tags);
 
-       Results results = rb.parallel(1);
+        Results results = rb.parallel(1);
         long elapsedMs = (System.nanoTime() - t0) / 1_000_000L;
 
         System.out.println("featuresTotal=" + results.getFeaturesTotal()
@@ -39,7 +40,7 @@ public class PixRunner {
         var failed = utils.RunMetrics.getFailed();
         int total = passed.size() + failed.size();
 
-         // ---- Tempo Estimado Manual
+        // ---- Tempo Estimado Manual
         int minPerScenario = 2;
         try {
             String prop = System.getProperty("ESTIMATED_MIN_PER_SCENARIO");
@@ -62,8 +63,14 @@ public class PixRunner {
                 passed                // lista passados
         );
 
+        // incluir link da run do GitHub se vier por env
+        String runUrl = System.getenv("GITHUB_RUN_URL");
+        if (runUrl != null && !runUrl.isBlank()) {
+            payload.put("runUrl", runUrl);
+        }
+
         // ---- envia para o Slack
-        String slackWebhook = resolveWebhook(); // -DSLACK_WEBHOOK ou env SLACK_WEBHOOK
+        String slackWebhook = resolveWebhook();
         String payloadJson = JsonUtils.toJson(payload);
 
         HttpClient client = HttpClient.newHttpClient();
@@ -81,12 +88,15 @@ public class PixRunner {
     }
 
     private static String resolveWebhook() {
-        String sys = System.getProperty("SLACK_WEBHOOK");
-        if (sys != null && !sys.isBlank()) return sys;
-
-        String env = System.getenv("SLACK_WEBHOOK");
-        if (env != null && !env.isBlank()) return env;
-
-        return "https://hooks.slack.com/services/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";
+        // prioridade: system property, depois env var – aceita 2 nomes
+        for (String key : new String[]{"SLACK_WEBHOOK_URL", "SLACK_WEBHOOK"}) {
+            String v = System.getProperty(key);
+            if (v != null && !v.isBlank()) return v;
+            v = System.getenv(key);
+            if (v != null && !v.isBlank()) return v;
+        }
+        throw new IllegalStateException(
+            "Slack Webhook não configurado. Defina SLACK_WEBHOOK_URL (ou SLACK_WEBHOOK) via -D ou variável de ambiente."
+        );
     }
 }
