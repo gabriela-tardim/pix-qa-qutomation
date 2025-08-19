@@ -30,6 +30,9 @@ jobs:
         shell: bash
         env:
           KARATE_TAGS: ${{ github.event.inputs.tags }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}  # <-- seu PixRunner deve ler isso
+          SLACK_CHANNEL: qa-automation-alerts-pix              # opcional (se seu código usar)
+          GITHUB_RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}  # opcional, útil pro card
         run: |
           if [ -n "$KARATE_TAGS" ]; then
             echo ">> Running with tags: $KARATE_TAGS"

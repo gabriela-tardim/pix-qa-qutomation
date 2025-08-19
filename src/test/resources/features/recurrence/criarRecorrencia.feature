@@ -3,7 +3,7 @@ Feature: Criar recorrência Pix com autenticação
 
 @jornada1 @fluxoFeliz
 Scenario: Criar recorrência válida
-  * def DateUtils = Java.type('utils.dateUtils')
+  * def DateUtils = Java.type('utils.DateUtils')
   * def dates = DateUtils.getDates()
   * def startDate = dates.startDate
   * def expirationDate = dates.expirationDate
