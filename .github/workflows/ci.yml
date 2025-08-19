@@ -1,0 +1,64 @@
+﻿name: CI – Karate Pix
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      tags:
+        description: "Tags do Karate (ex: @pix ou ~@wip)"
+        required: false
+        default: ""
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 11 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "11"
+          cache: maven
+
+      - name: Build & Test (Maven + Karate)
+        shell: bash
+        env:
+          KARATE_TAGS: ${{ github.event.inputs.tags }}
+        run: |
+          if [ -n "$KARATE_TAGS" ]; then
+            echo ">> Running with tags: $KARATE_TAGS"
+            mvn -B -ntp test -Dkarate.options="--tags $KARATE_TAGS"
+          else
+            mvn -B -ntp test
+          fi
+
+      - name: Upload reports (Karate/Surefire)
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: karate-reports
+          path: |
+            target/karate-reports/**
+            target/surefire-reports/**
+            target/failsafe-reports/**
+          if-no-files-found: warn
+
+      - name: Publicar resumo no Job Summary
+        if: always()
+        shell: bash
+        run: |
+          echo "## Resultados do Karate" >> $GITHUB_STEP_SUMMARY
+          echo "- Execução: \`${{ github.workflow }}\` (#${{ github.run_number }})" >> $GITHUB_STEP_SUMMARY
+          echo "- Branch: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Disparado por: \`${{ github.actor }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- Tags usadas: \`${{ github.event.inputs.tags || '—' }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Artefatos" >> $GITHUB_STEP_SUMMARY
+          echo "- Baixe os relatórios: **karate-reports** (aba Artifacts desta execução)" >> $GITHUB_STEP_SUMMARY
