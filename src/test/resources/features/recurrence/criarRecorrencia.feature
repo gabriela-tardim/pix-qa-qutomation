@@ -5,16 +5,18 @@ Background:
   * def dates = DateUtils.getDates()
   * def startDate = dates.startDate
   * def expirationDate = dates.expirationDate
-  * def baseUrl = config.baseUrl
 
-@jornada1 @fluxoFeliz
-Scenario: Criar recorrência válida (token client_credentials)
+  * call read('classpath:features/utils/auth.feature')
+  * def token = token
 
-  * def _ = call read('classpath:features/utils/auth.feature@public') { method: 'client', setHeader: true }
+  * url baseUrl
+  * header Authorization = 'Bearer ' + token
+  * header Content-Type = 'application/json'
 
-  Given url baseUrl
-  And path 'recurrence-receiver'
-  And header Content-Type = 'application/json'
+@jornada1 @fluxoFeliz @ci
+Scenario: Criar recorrência com sucesso da Jornada 1
+
+  Given path 'recurrence-receiver'
   And request
   """
   {
@@ -41,12 +43,3 @@ Scenario: Criar recorrência válida (token client_credentials)
   * eval java.lang.Thread.sleep(4000)
   * match response.recurrence.status == 'SENT'
 
-
-#   @jornada2 - exemplo chamando outro token
-# Scenario: Outra operação (token pix-security 211)
-#   * def _ = call read('classpath:features/utils/auth.feature@public') { method: 'pix', companyId: 211, setHeader: true }
-
-#   Given url baseUrl
-#   And path 'alguma-coisa'
-#   When method get
-#   Then status 200

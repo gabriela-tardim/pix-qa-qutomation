@@ -10,6 +10,7 @@ public class SlackUtils {
     }
 
     public static Map<String, Object> buildSummaryCard(
+            String title,
             int totalCases,
             String totalEstimatedHuman,
             String successTimeHuman,
@@ -19,7 +20,7 @@ public class SlackUtils {
 
         Map<String, Object> header = Map.of(
             "type", "header",
-            "text", Map.of("type", "plain_text", "text", ":rocket: Testes Pix") // plain_text evita invalid_blocks
+            "text", Map.of("type", "plain_text", "text", ":rocket: Testes Pix")
         );
 
         Map<String, Object> topFields = Map.of(
@@ -50,5 +51,17 @@ public class SlackUtils {
         payload.put("text", "Resumo de execução – Pix");
         payload.put("blocks", List.of(header, topFields, divider, failedBlock, passedBlock));
         return payload;
+    }
+
+    public static Map<String, Object> buildSummaryCard(
+            int totalCases,
+            String totalEstimatedHuman,
+            String successTimeHuman,
+            List<String> failedScenarios,
+            List<String> passedScenarios) {
+        return buildSummaryCard(
+            ":rocket: Testes Pix",
+            totalCases, totalEstimatedHuman, successTimeHuman, failedScenarios, passedScenarios
+        );
     }
 }

@@ -1,20 +1,18 @@
 function fn() {
-  var p = karate.properties;
+
+
   var config = {};
 
-  config.baseUrl = p['BASE_URL'] || 'https://pix.hml.caradhras.io/automatic/v1';
+    config.baseUrl = karate.properties['baseUrl'] || 'https://pix.hml.caradhras.io/automatic/v1';
 
-  config.authA = {
-    tokenUrl:     p['AUTH_TOKEN_URL']     || 'https://auth.hml.caradhras.io/oauth2/token',
-    clientId:     p['AUTH_CLIENT_ID'],
-    clientSecret: p['AUTH_CLIENT_SECRET']
-  };
+    var RunMetrics = Java.type('utils.RunMetrics');
+  RunMetrics.reset();
 
-  config.authB = {
-    baseUrl:   p['PIX_SECURITY_BASE_URL']  || 'https://pix-security-infos-eks.hml.caradhras.io:5000',
-    tokenPath: p['PIX_SECURITY_TOKEN_PATH'] || '/v1/caradhras_token',
-    companyId: p['PIX_SECURITY_COMPANY_ID'] || '211'
-  };
-
+  karate.configure('afterScenario', function(){
+    var name = karate.info.scenarioName;
+    if (karate.info.error) RunMetrics.addFailed(name);
+    else RunMetrics.addPassed(name, 0);
+  });
+  
   return config;
 }

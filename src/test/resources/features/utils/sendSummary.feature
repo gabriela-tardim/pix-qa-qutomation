@@ -2,7 +2,7 @@ Feature: Enviar resumo da execução para Slack
 
 Scenario: Postar card de resumo
   * def RunMetrics = Java.type('utils.RunMetrics')
-  * def slackUtils = Java.type('utils.slackUtils')
+  * def slackUtils = Java.type('utils.SlackUtils')
 
   * def total = RunMetrics.getTotalExecuted()
   * def totalEstimated = RunMetrics.getTotalEstimatedHuman()
