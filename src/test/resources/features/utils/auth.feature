@@ -12,9 +12,11 @@ Background:
 Scenario: Gerar token
   Given url tokenUrl
   And header Content-Type = 'application/x-www-form-urlencoded; charset=UTF-8'
+  And header Accept = 'application/json'
   And header Authorization = basic
   And form field grant_type = 'client_credentials'
   When method post
+  * if (responseStatus != 200) karate.log('AUTH DEBUG -> status:', responseStatus, 'WWW-Authenticate:', responseHeaders['WWW-Authenticate'], 'body:', response)
   Then status 200
   * def token = response.access_token
   * match token != null
