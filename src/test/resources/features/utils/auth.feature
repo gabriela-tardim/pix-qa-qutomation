@@ -1,13 +1,17 @@
 Feature: Obter token de autenticação
 
 Background:
-  * def tokenUrl = karate.properties['AUTH_TOKEN_URL']
-  * def clientId = karate.properties['AUTH_CLIENT_ID']
-  * def clientSecret = karate.properties['AUTH_CLIENT_SECRET']
-  * if (!tokenUrl || !clientId || !clientSecret) karate.fail('Missing auth props: AUTH_TOKEN_URL | AUTH_CLIENT_ID | AUTH_CLIENT_SECRET')
+  * def tokenUrlRaw  = karate.properties['AUTH_TOKEN_URL']
+  * def clientIdRaw  = karate.properties['AUTH_CLIENT_ID']
+  * def clientSecRaw = karate.properties['AUTH_CLIENT_SECRET']
+  * if (!tokenUrlRaw || !clientIdRaw || !clientSecRaw) karate.fail('Missing auth props: AUTH_TOKEN_URL | AUTH_CLIENT_ID | AUTH_CLIENT_SECRET')
+
+  * def tokenUrl  = tokenUrlRaw.trim()
+  * def clientId  = clientIdRaw.trim()
+  * def clientSec = clientSecRaw.trim()
 
   * def Base64 = Java.type('java.util.Base64')
-  * def basic = 'Basic ' + Base64.getEncoder().encodeToString((clientId + ':' + clientSecret).getBytes('UTF-8'))
+  * def basic  = 'Basic ' + Base64.getEncoder().encodeToString((clientId + ':' + clientSec).getBytes('UTF-8'))
 
 Scenario: Gerar token
   Given url tokenUrl

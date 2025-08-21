@@ -13,7 +13,21 @@ Scenario: Notificar sucesso de recorrência
   * def totalEstimatedHuman = karate.get('totalEstimatedHuman') || '--'
   * def successTimeHuman = karate.get('successTimeHuman') || '--'
   * def failedScenarios = karate.get('failedScenarios') || []
-  * def passedScenarios = karate.get('passedScenarios') || ['SENT — start: ' + startDate + ' — exp: ' + expirationDate]
+  * def passedScenarios = karate.get('passedScenarios') || []
+  * configure afterScenario =
+    """
+    function(result){
+      var status = karate.get('responseStatus');
+      if (status == 200 || status == 201) {
+        var list = karate.get('passedScenarios') || [];
+        list.push('PASSED — ' + result.scenario.name + ' — status: ' + status);
+        karate.set('passedScenarios', list);
+      } else {
+        var list = karate.get('failedScenarios') || [];
+        list.push('FAILED — ' + result.scenario.name + ' — status: ' + status);
+        karate.set('failedScenarios', list);
+      }
+    }
 
   # Título por fluxo
   * def title = 'Pix Automático – Recorrência'
