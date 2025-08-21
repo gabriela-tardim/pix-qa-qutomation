@@ -17,6 +17,9 @@ jobs:
 
     env:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      AUTH_TOKEN_URL: ${{ secrets.AUTH_TOKEN_URL }}
+      AUTH_CLIENT_ID: ${{ secrets.AUTH_CLIENT_ID }}
+      AUTH_CLIENT_SECRET: ${{ secrets.AUTH_CLIENT_SECRET }}
       KARATE_TAGS: ${{ github.event.inputs.tags }}
 
     steps:
@@ -34,13 +37,16 @@ jobs:
         shell: bash
         run: |
           MVN="mvn -B -ntp test -Dtest=PixRunnerTest \
-            -DSLACK_WEBHOOK_URL=\"$SLACK_WEBHOOK_URL\""
+            -DSLACK_WEBHOOK_URL=\"$SLACK_WEBHOOK_URL\" \
+            -DAUTH_TOKEN_URL=\"$AUTH_TOKEN_URL\" \
+            -DAUTH_CLIENT_ID=\"$AUTH_CLIENT_ID\" \
+            -DAUTH_CLIENT_SECRET=\"$AUTH_CLIENT_SECRET\""
 
           if [ -n "$KARATE_TAGS" ]; then
             echo ">> Running with tags: $KARATE_TAGS"
-            eval "$MVN -DTAGS=\"$KARATE_TAGS\""
+            eval "$MVN -DTAGS=\"$KARATE_TAGS,~@util\""
           else
-            eval "$MVN"
+            eval "$MVN -DTAGS=\"~@util\""
           fi
 
       - name: Upload reports (Karate/Surefire)

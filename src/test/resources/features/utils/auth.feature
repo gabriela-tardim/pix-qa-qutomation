@@ -1,12 +1,20 @@
 Feature: Obter token de autenticação
 
-  Scenario: Gerar token
-    * def authUrl = 'https://auth.hml.caradhras.io/oauth2/token'
-    * def basicAuthHeader = 'Basic MzVyYzU4ZGZsYW02dTdkMW40MDFzaXI2MDk6MXBkZDFpOXNoYzdwaWhrcTRkcGhxbm5sNGNvZ3ZhM2x0dmhobHFlbzU0YWZjMWRndm1ocQ=='
-    Given url authUrl
-    And header Content-Type = 'application/x-www-form-urlencoded'
-    And header Authorization = basicAuthHeader
-    And request 'grant_type=client_credentials'
-    When method post
-    Then status 200
-    * def token = response.access_token
+Background:
+  * def tokenUrl = karate.properties['AUTH_TOKEN_URL']
+  * def clientId = karate.properties['AUTH_CLIENT_ID']
+  * def clientSecret = karate.properties['AUTH_CLIENT_SECRET']
+  * if (!tokenUrl || !clientId || !clientSecret) karate.fail('Missing auth props: AUTH_TOKEN_URL | AUTH_CLIENT_ID | AUTH_CLIENT_SECRET')
+
+  * def Base64 = Java.type('java.util.Base64')
+  * def basic = 'Basic ' + Base64.getEncoder().encodeToString((clientId + ':' + clientSecret).getBytes('UTF-8'))
+
+Scenario: Gerar token
+  Given url tokenUrl
+  And header Content-Type = 'application/x-www-form-urlencoded; charset=UTF-8'
+  And header Authorization = basic
+  And form field grant_type = 'client_credentials'
+  When method post
+  Then status 200
+  * def token = response.access_token
+  * match token != null
